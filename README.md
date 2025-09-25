@@ -82,4 +82,15 @@ Run our tests with
 ./manage.py test dhdconf
 ```
 
-Note that some of the fiduswriter test suite will fail with this plugin activated as we are deactivating some of the core functionality
+If on sqlite locally, you need to add a `TEST` conffiguration in `configuration.py`:
+
+```py
+DATABASES = {
+    "default": {
+        ...
+        "TEST": {
+            "NAME": "/tmp/fidustest.sql"
+        }
+    }
+}
+```
