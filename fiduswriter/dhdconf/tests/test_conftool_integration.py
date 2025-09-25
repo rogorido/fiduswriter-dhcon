@@ -5,8 +5,7 @@ from unittest.mock import patch
 import django.utils.timezone
 from allauth.account.models import EmailAddress
 from django.db import IntegrityError
-from django.test import TestCase, TransactionTestCase
-from twisted.internet.defer import returnValue
+from django.test import TestCase
 
 from dhdconf.conftool.api import ConftoolClient, LoginResponse, UserInfoResponse, ConftoolLoginFailedException, \
     ExportUserResponse, ExportPaperResponse, PaperAuthor
@@ -194,7 +193,7 @@ class ImportPaperTest(TestCase):
         pass
 
 
-class ImportPaperTestWithActiveEditorSession(TransactionTestCase):
+class ImportPaperTestWithActiveEditorSession(TestCase):
 
     def setUp(self):
         self.user = _user_factory()
