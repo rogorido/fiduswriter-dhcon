@@ -5,7 +5,8 @@ from unittest.mock import patch
 import django.utils.timezone
 from allauth.account.models import EmailAddress
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
+from twisted.internet.defer import returnValue
 
 from dhdconf.conftool.api import ConftoolClient, LoginResponse, UserInfoResponse, ConftoolLoginFailedException, \
     ExportUserResponse, ExportPaperResponse, PaperAuthor
@@ -13,6 +14,8 @@ from dhdconf.conftool.auth import ConftoolBackend
 from dhdconf.conftool.importing import import_emails, import_paper
 from dhdconf.models import ConftoolUser, ConftoolEmail, ConftoolDocument
 from user.models import User
+from document.consumers import WebsocketConsumer
+from document import prosemirror
 
 
 def _user_factory() -> ConftoolUser:
@@ -189,3 +192,98 @@ class ImportPaperTest(TestCase):
     def test_that_user_invite_is_only_applied_with_verified_email(self):
         # TODO
         pass
+
+
+class ImportPaperTestWithActiveEditorSession(TransactionTestCase):
+
+    def setUp(self):
+        self.user = _user_factory()
+        self.email = ConftoolEmail.objects.create(
+            user=self.user, email="author1@example.com", verified=True
+        )
+        self.data = ExportPaperResponse(
+            paper_id=234,
+            submitting_author_id=123,
+            title="paper title",
+            topics=["t1", "t2"],
+            keywords=["k1", "k2"],
+            abstract="the\npaper\nabstract\n",
+            contribution_type="Presentation",
+            authors=[
+                PaperAuthor(
+                    name="Jones, Alex",
+                    organization="ORG",
+                    email="author1@example.com",
+                    orcid="0000-1234-2345-3456"
+                )
+            ]
+        )
+        # Import paper first to create the document
+        self.document = import_paper(self.data)
+        # Mock a WebSocket session for this document
+        self.mock_session = {
+            "doc": self.document,
+            "node": prosemirror.from_json(self.document.content),
+            "node_updates": False,
+            "participants": {},
+            "last_saved_version": self.document.version,
+        }
+        self.document.diffs = []  # Initialize diffs list
+        WebsocketConsumer.sessions[self.document.pk] = self.mock_session
+
+    def tearDown(self):
+        # Clean up session
+        if self.document and self.document.pk in WebsocketConsumer.sessions:
+            del WebsocketConsumer.sessions[self.document.pk]
+
+    def test_importing_creates_paper_with_attributes_when_session_active(self):
+        # Import again with different data to trigger session update
+        modified_data = replace(self.data,
+            title="updated paper title",
+            topics=["t3", "t4"],
+            keywords=["k3", "k4"],
+            abstract="updated abstract",
+            contribution_type="Workshop",
+            authors=[
+                PaperAuthor(
+                    name="Changed, Alex II.",
+                    organization="ORG-updated",
+                    email="author1-updated@example.com",
+                    orcid="0000-1111-2222-3333"
+                )
+            ]
+        )
+
+        with patch.object(WebsocketConsumer, 'send_updates', return_value=None):
+            import_paper(modified_data)
+
+            # Verify session was updated
+            session = WebsocketConsumer.sessions[self.document.pk]
+            self.assertTrue(
+                session["node_updates"],
+                "node_updates should be True after session update"
+            )
+            self.assertGreater(
+                session["doc"].version,
+                self.mock_session["last_saved_version"],
+                "Document version should be incremented"
+            )
+            self.assertTrue(
+                len(session["doc"].diffs) > 0,
+                "Diffs should be added to session"
+            )
+
+            node_content = prosemirror.to_mini_json(session["node"])
+            content = json.dumps(node_content)
+            self.assertIn(json.dumps("Workshop"), content)
+            self.assertIn(json.dumps("updated paper title"), content)
+            self.assertIn(json.dumps("t3"), content)
+            self.assertIn(json.dumps("t4"), content)
+            self.assertIn(json.dumps("k3"), content)
+            self.assertIn(json.dumps("k4"), content)
+            self.assertIn(json.dumps("updated abstract"), content)
+            self.assertIn(json.dumps("Changed"), content)
+            self.assertIn(json.dumps("Alex II."), content)
+            self.assertIn(json.dumps("ORG-updated"), content)
+            self.assertIn(json.dumps("author1-updated@example.com"), content)
+            self.assertIn(json.dumps("0000-1111-2222-3333"), content)
