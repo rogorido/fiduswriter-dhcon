@@ -7,11 +7,18 @@ from allauth.account.models import EmailAddress
 from django.db import IntegrityError
 from django.test import TestCase
 
-from dhdconf.conftool.api import ConftoolClient, LoginResponse, UserInfoResponse, ConftoolLoginFailedException, \
-    ExportUserResponse, ExportPaperResponse, PaperAuthor
+from dhdconf.conftool.api import (
+    ConftoolClient,
+    LoginResponse,
+    UserInfoResponse,
+    ConftoolLoginFailed,
+    ExportUserResponse,
+    ExportPaperResponse,
+    PaperAuthor
+)
 from dhdconf.conftool.auth import ConftoolBackend
 from dhdconf.conftool.importing import import_emails, import_paper
-from dhdconf.models import ConftoolUser, ConftoolEmail, ConftoolDocument
+from dhdconf.models import ConftoolUser, ConftoolEmail, ConftoolDocument, ImportLog
 from user.models import User
 from document.consumers import WebsocketConsumer
 from document import prosemirror
@@ -29,7 +36,7 @@ def _mock_login(_, username, password):
     if username == 'username' and password == 'password':
         return LoginResponse(True, 123, 'username')
     else:
-        raise ConftoolLoginFailedException()
+        raise ConftoolLoginFailed()
 
 
 def _mock_user_info(a, b):
@@ -77,9 +84,13 @@ class AuthenticationTest(TestCase):
     def test_preexisting_user(self):
         local_user = User.objects.create(username='username')
         self.assertIsNotNone(local_user.pk)
-        with self.assertRaises(IntegrityError):
-            self.backend.authenticate(None, 'username', 'password')
-
+        num_logs = ImportLog.objects.count()
+        response = self.backend.authenticate(None, 'username', 'password')
+        self.assertIsNone(response)
+        self.assertEqual(ImportLog.objects.count(), num_logs + 1)
+        log = ImportLog.objects.last()
+        self.assertEqual(log.error_type, ImportLog.ErrorType.IMPORT_USERINFO)
+        self.assertIn("IntegrityError", log.message)
 
     def test_that_email_is_created(self):
         # TODO

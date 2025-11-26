@@ -16,19 +16,27 @@ class ConftoolException(Exception):
     pass
 
 
-class ConftoolAccessDeniedException(ConftoolException):
+class ConftoolAccessDenied(ConftoolException):
     pass
 
 
-class ConftoolNonceTooSmallException(ConftoolAccessDeniedException):
+class ConftoolNonceTooSmall(ConftoolAccessDenied):
     pass
 
 
-class ConftoolLoginFailedException(ConftoolException):
+class ConftoolLoginFailed(ConftoolException):
     pass
 
 
-class ConftoolUnknownUserException(ConftoolException):
+class ConftoolUnknownUser(ConftoolException):
+    pass
+
+
+class ConftoolIllegalUsername(ConftoolException):
+    pass
+
+
+class ConftoolIllegalPassword(ConftoolException):
     pass
 
 
@@ -238,13 +246,17 @@ class ConftoolClient:
                 message = _t(elem, "message", "")
                 if message.startswith("access denied"):
                     if "nonce must be bigger" in message:
-                        raise ConftoolNonceTooSmallException(message)
+                        raise ConftoolNonceTooSmall(message)
                     else:
-                        raise ConftoolAccessDeniedException(message)
+                        raise ConftoolAccessDenied(message)
                 elif message.startswith("login failed"):
-                    raise ConftoolLoginFailedException(message)
+                    raise ConftoolLoginFailed(message)
                 elif message.startswith("user name unknown"):
-                    raise ConftoolUnknownUserException(message)
+                    raise ConftoolUnknownUser(message)
+                elif message.startswith("illegal password"):
+                    raise ConftoolIllegalPassword(message)
+                elif message.startswith("illegal user"):
+                    raise ConftoolIllegalUsername(message)
                 else:
                     raise ConftoolUnexpectedResponse(message)
 
