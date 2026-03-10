@@ -82,7 +82,7 @@ Run our tests with
 ./manage.py test dhdconf
 ```
 
-If on sqlite locally, you need to add a `TEST` conffiguration in `configuration.py`:
+If on sqlite locally, you need to add a `TEST` configuration in `configuration.py`:
 
 ```py
 DATABASES = {
