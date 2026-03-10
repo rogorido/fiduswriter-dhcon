@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: fiduswriter-dhdconf
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: David
+    family-names: Neugebauer
+    orcid: 'https://orcid.org/0009-0002-2136-2097'
+repository-code: 'https://github.com/DHd-Verband/fiduswriter-dhcon'
+abstract: >-
+  A fiduswriter plugin for conferences organized with
+  conftool
+license: AGPL-3.0
+commit: df68ea9
+version: 0.4.0
+date-released: '2025-09-25'
