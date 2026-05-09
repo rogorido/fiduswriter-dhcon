@@ -7,6 +7,7 @@ export class DhdConfHtmlExporter extends HTMLExporter {
 
     init() {
         this.styleSheets.push({url: staticUrl("css/dhdconf_export_html.css")})
+        this.converterOptions.affiliationNumbering = "decimal"
         return super.init()
     }
 }
