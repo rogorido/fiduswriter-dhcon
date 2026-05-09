@@ -1,5 +1,7 @@
 # FidusWriter-DHDConf
 
+Adding new functionalities to the plugin.
+
 FidusWriter-DHDConf is a [Fidus Writer](https://github.com/fiduswriter/fiduswriter/) plugin used to organize collaborative writing for submissions to [DHD conferences](https://dig-hum.de).
 
 Users can login with their [conftool](https://www.conftool.net/en/index.html) credentials.
