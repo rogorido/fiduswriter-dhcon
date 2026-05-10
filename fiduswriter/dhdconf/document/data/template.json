@@ -11,7 +11,6 @@
             "attrs": {
                 "title": "Title",
                 "id": "visibleTitle",
-                "locking": "fixed",
                 "elements": [
                     "heading1"
                 ],
@@ -42,14 +41,14 @@
                 "id": "subtitle",
                 "initial": [
                     {
-                        "type": "heading2",
+                        "type": "heading3",
                         "attrs": {
                             "id": "H6323428"
                         }
                     }
                 ],
                 "elements": [
-                    "heading2"
+                    "heading3"
                 ],
                 "marks": [
                     "strong",
@@ -59,7 +58,7 @@
             },
             "content": [
                 {
-                    "type": "heading2",
+                    "type": "heading3",
                     "attrs": {
                         "id": "H6323428"
                     }
@@ -109,8 +108,7 @@
             "attrs": {
                 "title": "Topics",
                 "id": "topics",
-                "item_title": "Topic",
-                "locking": "fixed"
+                "item_title": "Topic"
             }
         },
         {
