@@ -70,6 +70,9 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
     let fnCount = 0     // the number of footnotes we have encountered
     let figCount = 0    // the number of figures we have encountered
     let citeCount = 0   // the number of citations we have encountered
+    let inFootnote = false // paragraphs in footnotes do not need <p>
+    let inList = false // paragraphs in lists do not need <p>
+
     const headingCounts = [0, 0, 0, 0, 0, 0, 0, 0]  // For heading prefixes (1.1,…)
     const footnotesTEI = []
 
@@ -101,6 +104,7 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
          * is only needed at the bottom of the text. */
         if (item.type === "footnote") {
             fnCount += 1
+            inFootnote = true
             footnotesTEI.push(wrap(
                 "note",
                 item.attrs.footnote.map(c => f(c)).join(""),
@@ -177,6 +181,7 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         if (item.type === "ordered_list") {
             const items = item.content.filter(c => c.type === "list_item")
                 .map(li => {
+                    inList = true
                     const liTEI = li.content.map(ic => f(ic)).join("")
                     return wrap("item", liTEI)
                 })
@@ -188,6 +193,7 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         if (item.type === "bullet_list") {
             const items = item.content.filter(c => c.type === "list_item")
                 .map(li => {
+                    inList = true
                     const liTEI = li.content.map(ic => f(ic)).join("")
                     return wrap("item", liTEI)
                 })
@@ -205,6 +211,13 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
             if (item.content === undefined) {
                 return tag("lb")
             }
+
+            if (inFootnote || inList) {
+                return item.content.map(text).join("")
+                inFootnote = false
+                inList = false
+            }
+
             return wrap("p", item.content.map(c => f(c)).join(""))
         }
 
