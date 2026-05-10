@@ -1,3 +1,8 @@
 .tag ~ .tag::before {
     content: " \2013  ";
 }
+
+.doc-title {
+    display: none;
+    visibility: hidden;
+}
