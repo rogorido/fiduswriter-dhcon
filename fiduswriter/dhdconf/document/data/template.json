@@ -11,6 +11,7 @@
             "attrs": {
                 "title": "Title",
                 "id": "visibleTitle",
+                "locking": "fixed",
                 "elements": [
                     "heading1"
                 ],
@@ -108,7 +109,8 @@
             "attrs": {
                 "title": "Topics",
                 "id": "topics",
-                "item_title": "Topic"
+                "item_title": "Topic",
+                "locking": "fixed"
             }
         },
         {
