@@ -15,13 +15,16 @@ export class DhdConfHtmlExporter extends HTMLExporter {
     }
 
     download(blob) {
-        console.log(this.metaData.authors[0].attrs.lastname)
-        const joder = createSlugLastName(this.metaData.authors[0].attrs.lastname)
-        const nuestrotitulo = createSlug(this.docTitle)
-        return download(blob, `${joder}-${nuestrotitulo}.html.zip`, this.mimeType)
+        const lastNameSlug = createSlugLastName(
+            this.metaData.authors[0].attrs.lastname,
+        )
+        const ownSlug = createSlug(this.docTitle)
+        return download(
+            blob,
+            `${lastNameSlug}-${ownSlug}.html.zip`,
+            this.mimeType,
+        )
     }
-
-        
 }
 
 export class DhdConfDocxExporter extends DOCXExporter {
