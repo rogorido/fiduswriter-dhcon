@@ -248,9 +248,9 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
             }
 
             if (inFootnote || inList) {
-                return item.content.map(text).join("")
                 inFootnote = false
                 inList = false
+                return item.content.map(text).join("")
             }
 
             return wrap("p", item.content.map(c => f(c)).join(""))
