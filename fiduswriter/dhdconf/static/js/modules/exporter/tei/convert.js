@@ -322,7 +322,6 @@ function convert(
     settings,
 ) {
     const fields = extract(docContents)
-    console.log(fields)
 
     // All the fields used in the TEI header:
     const authorsTEI = authors(fields.authors, fields.orcidIds)

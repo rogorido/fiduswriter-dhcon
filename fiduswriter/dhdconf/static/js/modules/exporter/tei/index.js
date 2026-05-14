@@ -1,11 +1,17 @@
 import download from "downloadjs"
 
 import { createSlug } from "../tools/file"
+import { createSlugLastName } from "../tools/slugs"
 import { removeHidden } from "../tools/doc_content"
 import { ZipFileCreator } from "../tools/zip"
 
 import convert from "./convert"
-import { extractBody, extractCitations, extractImageIDs } from "./extract"
+import {
+    extractBody,
+    extractCitations,
+    extractImageIDs,
+    extractAuthors,
+} from "./extract"
 import { TeiCitationsExporter } from "./citations"
 import { TeiExporterMath } from "./math"
 
@@ -16,6 +22,11 @@ export class TEIExporter {
         this.imageDB = imageDB
         this.csl = csl
         this.updated = updated
+
+        // we have to create the slug with the first author!
+        this.lastNameSlug = createSlugLastName(
+            extractAuthors(this.doc.content)[0].lastname,
+        )
 
         this.slug = createSlug(doc.title)
         this.citeExp = new TeiCitationsExporter(csl, bibDB, doc.settings)
@@ -73,6 +84,10 @@ export class TEIExporter {
     }
 
     download(blob) {
-        return download(blob, `${this.slug}.tei.xml.zip`, "application/zip")
+        return download(
+            blob,
+            `${this.lastNameSlug}-${this.slug}.tei.xml.zip`,
+            "application/zip",
+        )
     }
 }
