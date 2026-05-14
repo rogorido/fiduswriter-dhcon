@@ -121,15 +121,11 @@ function extractTitle(docContents) {
 
 function extractSubtitle(docContents) {
     const subtitle = docContents.content
-        ?.find(part => part.type === "heading_part" && part.attrs.id === "subtitle")
-        ?.content
-        ?.find(part => part.type === "heading1")
-        ?.content
-        ?.filter(item => item.type === "text")
         ?.find(
             part =>
                 part.type === "heading_part" && part.attrs.id === "subtitle",
         )
+        ?.content?.find(part => part.type === "heading2")
         ?.content?.filter(item => item.type === "text")
         .map(item => item.text)
         .join("")
