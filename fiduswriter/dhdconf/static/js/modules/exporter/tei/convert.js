@@ -4,36 +4,39 @@
  * @module
  */
 
-import {textContent} from "../tools/doc_content"
-import extract, {extractTextNodes} from "./extract"
-import {tag, wrap, wrapText, linkify, linkRef, escapeXmlText} from "./utils"
-import {header} from "./templates/header"
-import {body} from "./templates/body"
-import {back} from "./templates/back"
-import {TEITemplate} from "./templates"
-
+import { textContent } from "../tools/doc_content"
+import extract, { extractTextNodes } from "./extract"
+import { tag, wrap, wrapText, linkify, linkRef, escapeXmlText } from "./utils"
+import { header } from "./templates/header"
+import { body } from "./templates/body"
+import { back } from "./templates/back"
+import { TEITemplate } from "./templates"
 
 function authors(data, orcidIds) {
-    return data.map(({firstname, lastname, institution, email}, idx) => {
-        const name = wrap(
-            "persName",
-            `${wrapText("surname", lastname)}${wrapText("forename", firstname)}`
-        )
-        const inst = wrapText("affiliation", institution || "")
-        const mail = wrapText("email", email || "")
+    return data
+        .map(({ firstname, lastname, institution, email }, idx) => {
+            const name = wrap(
+                "persName",
+                `${wrapText("surname", lastname)}${wrapText("forename", firstname)}`,
+            )
+            const inst = wrapText("affiliation", institution || "")
+            const mail = wrapText("email", email || "")
 
-        const contents = [name, inst, mail]
-        if (idx < orcidIds.length && orcidIds[idx]) {
-            contents.push(wrapText("idno", orcidIds[idx], {type: "ORCID"}))
-        }
-        return wrap("author", contents.join(""))
-    }).join("\n")
+            const contents = [name, inst, mail]
+            if (idx < orcidIds.length && orcidIds[idx]) {
+                contents.push(
+                    wrapText("idno", orcidIds[idx], { type: "ORCID" }),
+                )
+            }
+            return wrap("author", contents.join(""))
+        })
+        .join("\n")
 }
 
-function keywords(data, n="keywords") {
+function keywords(data, n = "keywords") {
     if (data.length) {
         const kws = data.map(kw => wrapText("term", kw)).join("\n")
-        return wrap("keywords", kws, {scheme: "ConfTool", n: n})
+        return wrap("keywords", kws, { scheme: "ConfTool", n: n })
     }
     return ""
 }
@@ -46,12 +49,12 @@ function text(item) {
     if (item.marks && item.marks.length) {
         return item.marks.reduce((previous, current) => {
             if (current.type === "em") {
-                return wrap("hi", previous, {rend: "italic"})
+                return wrap("hi", previous, { rend: "italic" })
             } else if (current.type === "strong") {
-                return wrap("hi", previous, {rend: "bold"})
+                return wrap("hi", previous, { rend: "bold" })
             } else if (current.type === "link" && current.attrs.href) {
                 if (current.attrs.href.startsWith("#")) {
-                    return previous  // do not show internal links
+                    return previous // do not show internal links
                 }
                 return linkRef(current.attrs.href, previous)
             }
@@ -66,14 +69,14 @@ function text(item) {
  * The first string represents the content and the second any footnotes.
  */
 function richText(richTextContent, imgDB, citationTexts, mathExporter) {
-    let divLevel = 0    // the number of currently open divs
-    let fnCount = 0     // the number of footnotes we have encountered
-    let figCount = 0    // the number of figures we have encountered
-    let citeCount = 0   // the number of citations we have encountered
+    let divLevel = 0 // the number of currently open divs
+    let fnCount = 0 // the number of footnotes we have encountered
+    let figCount = 0 // the number of figures we have encountered
+    let citeCount = 0 // the number of citations we have encountered
     let inFootnote = false // paragraphs in footnotes do not need <p>
     let inList = false // paragraphs in lists do not need <p>
 
-    const headingCounts = [0, 0, 0, 0, 0, 0, 0, 0]  // For heading prefixes (1.1,…)
+    const headingCounts = [0, 0, 0, 0, 0, 0, 0, 0] // For heading prefixes (1.1,…)
     const footnotesTEI = []
 
     function nextHeadingPrefix(atLevel) {
@@ -83,9 +86,12 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         }
         headingCounts[level] += 1
         for (let idx = level + 1; idx < headingCounts.length; idx++) {
-            headingCounts[idx] = 0;
+            headingCounts[idx] = 0
         }
-        return headingCounts.slice(0, level+1).join(".") + (level === 0 ? ". " : " ")
+        return (
+            headingCounts.slice(0, level + 1).join(".") +
+            (level === 0 ? ". " : " ")
+        )
     }
 
     function f(item) {
@@ -95,8 +101,9 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         }
 
         if (item.type === "equation" && item.attrs?.equation) {
-            return wrap("formula",
-                mathExporter.latexToMathML(item.attrs.equation)
+            return wrap(
+                "formula",
+                mathExporter.latexToMathML(item.attrs.equation),
             )
         }
 
@@ -105,13 +112,15 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         if (item.type === "footnote") {
             fnCount += 1
             inFootnote = true
-            footnotesTEI.push(wrap(
-                "note",
-                item.attrs.footnote.map(c => f(c)).join(""),
-                {n: fnCount, rend: "footnote text", "xml:id": `ftn${fnCount}`}
-            ))
+            footnotesTEI.push(
+                wrap("note", item.attrs.footnote.map(c => f(c)).join(""), {
+                    n: fnCount,
+                    rend: "footnote text",
+                    "xml:id": `ftn${fnCount}`,
+                }),
+            )
             // Return only the markup for footnotes inside the regular text.
-            return tag("ref", {n: fnCount, target: `ftn${fnCount}`})
+            return tag("ref", { n: fnCount, target: `ftn${fnCount}` })
         }
 
         /* Various recursive cases which require further parsing. */
@@ -120,14 +129,22 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         if (item.type === "figure") {
             figCount++
             /* image is only an ID which we still need to look up in the imgDB */
-            const image = item.content.find(i => i.type === "image")?.attrs.image
+            const image = item.content.find(i => i.type === "image")?.attrs
+                .image
             const filename = imgDB.db[image]?.image.split("/").pop()
             const caption = item.attrs.caption
-                ? item.content.find(i => i.type === "figure_caption").content?.map(c => f(c)).join("")
+                ? item.content
+                      .find(i => i.type === "figure_caption")
+                      .content?.map(c => f(c))
+                      .join("")
                 : null
-            return wrap("figure",
-                tag("graphic", {url: `images/${filename}`})
-                + wrap("head", `Abbildung ${figCount}${caption ? ": " : ""}${caption || ""}`)
+            return wrap(
+                "figure",
+                tag("graphic", { url: `images/${filename}` }) +
+                    wrap(
+                        "head",
+                        `Abbildung ${figCount}${caption ? ": " : ""}${caption || ""}`,
+                    ),
             )
         }
 
@@ -140,28 +157,44 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         if (item.type === "table") {
             let caption = ""
             if (item.attrs.caption) {
-                const captionTEI = item.content.find(it => it.type === "table_caption").content
-                    .map(it => f(it)).join("")
+                const captionTEI = item.content
+                    .find(it => it.type === "table_caption")
+                    .content.map(it => f(it))
+                    .join("")
                 caption = wrap("head", captionTEI)
             }
-            const tableBody = item.content.find(it => it.type === "table_body").content
-            const tableTEI = tableBody.map(row => {
-                const rowTEI = row.content.map(it => {
-                    const attrs = {}
-                    if (it.type === "table_header") {
-                        attrs.role = "label"
-                    }
-                    if (it.attrs?.rowspan > 1) {
-                        attrs.rows = it.attrs.rowspan
-                    }
-                    if (it.attrs?.colspan > 1) {
-                        attrs.cols = it.attrs.colspan
-                    }
-                    return wrap("cell", it.content.map(c => f(c)).join(""), attrs)
-                }).join("")
-                const isLabel = row.content.filter(c => c.type === "table_header").length === row.content.length
-                return isLabel ? wrap("row", rowTEI, {role: "label"}) : wrap("row", rowTEI)
-            }).join("")
+            const tableBody = item.content.find(
+                it => it.type === "table_body",
+            ).content
+            const tableTEI = tableBody
+                .map(row => {
+                    const rowTEI = row.content
+                        .map(it => {
+                            const attrs = {}
+                            if (it.type === "table_header") {
+                                attrs.role = "label"
+                            }
+                            if (it.attrs?.rowspan > 1) {
+                                attrs.rows = it.attrs.rowspan
+                            }
+                            if (it.attrs?.colspan > 1) {
+                                attrs.cols = it.attrs.colspan
+                            }
+                            return wrap(
+                                "cell",
+                                it.content.map(c => f(c)).join(""),
+                                attrs,
+                            )
+                        })
+                        .join("")
+                    const isLabel =
+                        row.content.filter(c => c.type === "table_header")
+                            .length === row.content.length
+                    return isLabel
+                        ? wrap("row", rowTEI, { role: "label" })
+                        : wrap("row", rowTEI)
+                })
+                .join("")
             return wrap("table", caption + tableTEI)
         }
 
@@ -179,7 +212,8 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
         }
 
         if (item.type === "ordered_list") {
-            const items = item.content.filter(c => c.type === "list_item")
+            const items = item.content
+                .filter(c => c.type === "list_item")
                 .map(li => {
                     inList = true
                     const liTEI = li.content.map(ic => f(ic)).join("")
@@ -188,10 +222,11 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
                 .join("")
             // Note that earlier versions of the TEI guidelines recommended
             // <list type="numbered"> instead.
-            return wrap("list", items, {type: "ordered"})
+            return wrap("list", items, { type: "ordered" })
         }
         if (item.type === "bullet_list") {
-            const items = item.content.filter(c => c.type === "list_item")
+            const items = item.content
+                .filter(c => c.type === "list_item")
                 .map(li => {
                     inList = true
                     const liTEI = li.content.map(ic => f(ic)).join("")
@@ -200,7 +235,7 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
                 .join("")
             // Note that earlier versions of the TEI guidelines recommended
             // <list type="bulleted"> instead.
-            return wrap("list", items, {type: "unordered"})
+            return wrap("list", items, { type: "unordered" })
         }
         if (item.type === "list_item") {
             // Do nothing, already handled in 'bullet_list' or 'ordered_list'.
@@ -230,7 +265,8 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
             // Whenever the new heading is of a higher order (i.e. the number is smaller)
             // or the same as the preceding heading, we need to close our previous div(s).
             const order = parseInt(item.type.slice(-1))
-            const closing = (order <= divLevel) ? "</div>".repeat(divLevel + 1 - order) : ""
+            const closing =
+                order <= divLevel ? "</div>".repeat(divLevel + 1 - order) : ""
             divLevel = order
             const opening = `<div type="div${divLevel}" rend="DH-Heading${divLevel}">`
             const head = wrap("head", nextHeadingPrefix(divLevel) + content)
@@ -253,26 +289,40 @@ function richText(richTextContent, imgDB, citationTexts, mathExporter) {
     const body = `${result}${closing}`
 
     const footnotes = footnotesTEI.length
-        ? wrap("div", footnotesTEI.join("\n"), {type: "notes"})
+        ? wrap("div", footnotesTEI.join("\n"), { type: "notes" })
         : ""
     return [body, footnotes]
 }
 
 function bibliography(bibliography) {
-    const tei = bibliography?.content?.map((item) => {
-        return wrap("bibl", extractTextNodes(item).map(n => linkify(text(n))).join(""))
-    }).join("\n")
+    const tei = bibliography?.content
+        ?.map(item => {
+            return wrap(
+                "bibl",
+                extractTextNodes(item)
+                    .map(n => linkify(text(n)))
+                    .join(""),
+            )
+        })
+        .join("\n")
     return tei || ""
 }
-
 
 /**
  * This is the main entry point of this module. It takes the title-slug of
  * the document and the documents content object and generates a string
  * of TEI XML suitable for download.
  */
-function convert(slug, docContents, imgDB, citationsExporter, mathExporter, settings) {
+function convert(
+    slug,
+    docContents,
+    imgDB,
+    citationsExporter,
+    mathExporter,
+    settings,
+) {
     const fields = extract(docContents)
+    console.log(fields)
 
     // All the fields used in the TEI header:
     const authorsTEI = authors(fields.authors, fields.orcidIds)
@@ -283,10 +333,10 @@ function convert(slug, docContents, imgDB, citationsExporter, mathExporter, sett
         keywords(fields.tags.keywords, "keywords"),
         keywords(fields.tags.topics, "topics"),
     ].join("\n")
-    const title = wrapText("title", fields.title, {type: "main"})
-    const subtitle = wrapText("title", fields.subtitle, {type: "sub"})
+    const title = wrapText("title", fields.title, { type: "main" })
+    const subtitle = wrapText("title", fields.subtitle, { type: "sub" })
 
-    const [abstract,] = richText(fields.abstract.content)
+    const [abstract] = richText(fields.abstract.content)
 
     const TEIheader = header(
         authorsTEI,
@@ -295,7 +345,7 @@ function convert(slug, docContents, imgDB, citationsExporter, mathExporter, sett
         keywordsTEI,
         subtitle,
         abstract,
-        settings.publicationStmt
+        settings.publicationStmt,
     )
 
     // All the fields used in the TEI body:
@@ -303,16 +353,20 @@ function convert(slug, docContents, imgDB, citationsExporter, mathExporter, sett
         fields.body.content,
         imgDB,
         citationsExporter.citationTexts,
-        mathExporter
+        mathExporter,
     )
     const TEIbody = body(text)
 
     // All the fields used in the TEI back:
     const bibItems = bibliography(citationsExporter.bibliography)
-    const TEIback = back(footnotes, citationsExporter.bibliographyHeader, bibItems)
+    const TEIback = back(
+        footnotes,
+        citationsExporter.bibliographyHeader,
+        bibItems,
+    )
 
     return TEITemplate(slug, TEIheader, TEIbody, TEIback)
 }
 
-export {authors, keywords, richText, text}
+export { authors, keywords, richText, text }
 export default convert
