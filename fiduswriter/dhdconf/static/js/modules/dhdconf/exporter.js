@@ -1,15 +1,13 @@
 import download from "downloadjs"
 
-import {createSlugLastName} from "../exporter/tools/slugs"
-import {createSlug} from "../exporter/tools/file"
+import { createSlugLastName } from "../exporter/tools/slugs"
+import { createSlug } from "../exporter/tools/file"
 
-import {HTMLExporter} from "../exporter/html"
-import {DOCXExporter} from "../exporter/docx";
-import {config} from "./config";
-
+import { HTMLExporter } from "../exporter/html"
+import { DOCXExporter } from "../exporter/docx"
+import { config } from "./config"
 
 export class DhdConfHtmlExporter extends HTMLExporter {
-
     init() {
         this.styleSheets.push({url: staticUrl("css/dhdconf_export_html.css")})
         this.converterOptions.affiliationNumbering = "alpha"
