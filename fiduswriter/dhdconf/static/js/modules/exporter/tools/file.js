@@ -40,5 +40,5 @@ export const createSlug = str => {
 export const createSlugLastName = str => {
     str = slugify(str, false)
 
-    return upperCase(str)
+    return str.toUpperCase()
 }
