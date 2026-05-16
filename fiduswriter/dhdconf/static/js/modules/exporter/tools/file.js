@@ -1,4 +1,10 @@
-// TODO: write doc to this function.
+/**
+ * Normalize a string to create a slug depending on whether title or not
+ *
+ * @param {string} str - String to normalize
+ * @param {boolean} isTitle - whether is title or not
+ * @returns {string} Resulting slug.
+ */
 const slugify = (str, isTitle) => {
     if (str === "" && isTitle) {
         str = gettext("Untitled")
