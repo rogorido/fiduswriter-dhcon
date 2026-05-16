@@ -187,7 +187,6 @@ export class HTMLExporterConvert {
                 }
                 break
             case "tags_part":
-                console.log("el nodo es", node)
                 if (node.attrs.metadata === "keywords" && node.content) {
                     node.content.forEach(tag => {
                         this.metaData.keywords.push(tag.attrs.tag)
@@ -196,7 +195,11 @@ export class HTMLExporterConvert {
 
                 if (node.attrs.id === "orcidIds" && node.content) {
                     node.content.forEach(orcid => {
-                        this.orcidIds.push(orcid.attrs.tag)
+                        if (orcid.attrs.tag !== "<ORCID: N/A>") {
+                            this.orcidIds.push(orcid.attrs.tag)
+                        } else {
+                            this.orcidIds.push(undefined)
+                        }
                     })
                 }
 
@@ -335,7 +338,7 @@ export class HTMLExporterConvert {
                         // we have to get the orcid before the counter gets increased!!
                         let orcid = this.orcidIds[counter]
                         if (contributor.firstname || contributor.lastname) {
-                            output += `<span id="${this.idPrefix}${node.attrs.id}-${counter++}" class="person">`
+                            output += `<div><span id="${this.idPrefix}${node.attrs.id}-${counter++}" class="person">`
                             const nameParts = []
                             if (contributor.firstname) {
                                 nameParts.push(
@@ -350,8 +353,6 @@ export class HTMLExporterConvert {
                             if (nameParts.length) {
                                 output += `<span class="name">${nameParts.join(" ")}</span>`
                             }
-
-                            output += `<span class="orcid">${orcid}</span>`
 
                             if (contributor.institution) {
                                 let affNumber
@@ -375,6 +376,11 @@ export class HTMLExporterConvert {
                                 output += `<a class="affiliation" href="#aff-${affNumber}"${this.epub ? ' epub:type="noteref"' : ""}>${affNumberDisplay}</a>`
                             }
                             output += "</span>"
+
+                            if (orcid) {
+                                output += `  (<a href="https://orcid.org/${orcid}" aria-label="View ORCID record - ${orcid}" class="orcid">https://orcid.org/${orcid}</a>)`
+                            }
+                            output += "</div>"
                         } else if (contributor.institution) {
                             // There is an affiliation but no first/last name. We take this
                             // as a group collaboration.
@@ -384,15 +390,16 @@ export class HTMLExporterConvert {
                         }
                         contributorOutputs.push(output)
                     })
-                    content += contributorOutputs.join(", ")
+                    content += contributorOutputs.join("")
                 }
                 break
             case "tags_part":
-                start += `<div class="doc-part doc-tags doc-${node.attrs.id} doc-${node.attrs.metadata || "other"}" id="${this.idPrefix}${node.attrs.id}"${node.attrs.language ? ` lang="${node.attrs.language}"` : ""}>`
-                end = "</div>" + end
+                if (node.content) {
+                    start += `<div class="doc-part doc-tags doc-${node.attrs.id} doc-${node.attrs.metadata || "other"}" id="${this.idPrefix}${node.attrs.id}"${node.attrs.language ? ` lang="${node.attrs.language}"` : ""}>`
+                    end = "</div>" + end
+                }
                 break
             case "tag":
-                console.log("estamos en el bloque de tags y el valor es", node)
                 content += `<span class='tag'>${escapeText(node.attrs.tag)}</span>`
                 break
             case "richtext_part":
