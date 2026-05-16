@@ -1,7 +1,6 @@
 import download from "downloadjs"
 
-import { createSlugLastName } from "../exporter/tools/slugs"
-import { createSlug } from "../exporter/tools/file"
+import { createSlug, createSlugLastName } from "../exporter/tools/file"
 
 import { HTMLExporter } from "../exporter/html"
 import { DOCXExporter } from "../exporter/docx"

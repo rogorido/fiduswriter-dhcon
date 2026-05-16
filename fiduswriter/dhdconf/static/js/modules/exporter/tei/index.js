@@ -1,7 +1,6 @@
 import download from "downloadjs"
 
-import { createSlug } from "../tools/file"
-import { createSlugLastName } from "../tools/slugs"
+import { createSlug, createSlugLastName } from "../tools/file"
 import { removeHidden } from "../tools/doc_content"
 import { ZipFileCreator } from "../tools/zip"
 

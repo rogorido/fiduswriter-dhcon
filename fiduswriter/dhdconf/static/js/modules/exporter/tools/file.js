@@ -1,35 +1,32 @@
+// Function to reduce a string
+const slugify = (str, isTitle) => {
+    if (str === "" && isTitle) {
+        str = gettext("Untitled")
+    } else if (str === "" && !isTitle) {
+        str = gettext("UNKNOWN")
+    }
+
+    str = str.replace(/[^a-zA-Z0-9\s]/g, "")
+    str = str.toLowerCase()
+    str = str.replace(/\s/g, "-")
+
+    return str
+}
+
 export const createSlug = str => {
-    const slugify = str => {
-        if (str === "") {
-            str = gettext("Untitled")
-        }
-        str = str.replace(/[^a-zA-Z0-9\s]/g, "")
-       str = str.toLowerCase()
-        str = str.replace(/\s/g, "-")
-        return str
+    console.log("el tñiutlo es:", str)
+    str = slugify(str, true)
+    console.log("el tñiutlo trasnforamdo es:", str)
+
+    if (str.length > 128) {
+        str = str.substring(0, 128)
     }
 
-    const titleSlug = slugify(title)
-//    const authorSlug = slugify(author)
-
-console.log("titleSlug", titleSlug)
-
-    let slug = `hola-${titleSlug}`
-
-    if (slug.length > 40) {
-        slug = slug.substring(0, 40)
-    }
-
-    return slug
+    return str
 }
 
 export const createSlugLastName = str => {
+    str = slugify(str, false)
 
-        if (str === "") {
-            str = gettext("Untitled")
-        }
-        str = str.replace(/[^a-zA-Z0-9\s]/g, "")
-       str = str.toLowerCase()
-        str = str.replace(/\s/g, "-")
-        return upperCase(str)
-    }
+    return upperCase(str)
+}
