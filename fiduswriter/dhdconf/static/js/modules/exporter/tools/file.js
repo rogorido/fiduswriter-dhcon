@@ -1,4 +1,4 @@
-// Function to reduce a string
+// TODO: write doc to this function.
 const slugify = (str, isTitle) => {
     if (str === "" && isTitle) {
         str = gettext("Untitled")
