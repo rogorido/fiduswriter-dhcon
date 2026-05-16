@@ -34,4 +34,12 @@ export class DhdConfDocxExporter extends DOCXExporter {
         }
         return super.init()
     }
+
+    download(blob) {
+        // console.log("los metadatos son: ", this.getBaseMetadata())
+        const metadata = this.getBaseMetadata()
+        const lastNameSlug = createSlugLastName(metadata.authors[0].lastname)
+        const ownSlug = createSlug(this.docTitle)
+        return download(blob, `${lastNameSlug}-${ownSlug}.docx`, this.mimeType)
+    }
 }
