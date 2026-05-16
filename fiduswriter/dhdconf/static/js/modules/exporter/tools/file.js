@@ -31,6 +31,12 @@ export const createSlug = str => {
     return str
 }
 
+/**
+ * Create a slug from a last name string and convert it to uppercase.
+ *
+ * @param {string} str - The last name string to slugify.
+ * @returns {string} The slugified last name in uppercase.
+ */
 export const createSlugLastName = str => {
     str = slugify(str, false)
 
