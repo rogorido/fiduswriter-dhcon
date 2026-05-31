@@ -27,7 +27,7 @@ export class TEIExporter {
             extractAuthors(this.doc.content)[0].lastname,
         )
 
-        this.slug = createSlug(doc.title)
+        this.slug = this.lastNameSlug + "-" + createSlug(doc.title)
         this.citeExp = new TeiCitationsExporter(csl, bibDB, doc.settings)
         this.mathExp = new TeiExporterMath()
 
@@ -83,10 +83,6 @@ export class TEIExporter {
     }
 
     download(blob) {
-        return download(
-            blob,
-            `${this.lastNameSlug}-${this.slug}.tei.xml.zip`,
-            "application/zip",
-        )
+        return download(blob, `${this.slug}.tei.xml.zip`, "application/zip")
     }
 }
