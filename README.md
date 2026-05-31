@@ -1,7 +1,5 @@
 # FidusWriter-DHDConf
 
-Adding new functionalities to the plugin.
-
 FidusWriter-DHDConf is a [Fidus Writer](https://github.com/fiduswriter/fiduswriter/) plugin used to organize collaborative writing for submissions to [DHD conferences](https://dig-hum.de).
 
 Users can login with their [conftool](https://www.conftool.net/en/index.html) credentials.
@@ -11,11 +9,58 @@ Users can login with their [conftool](https://www.conftool.net/en/index.html) cr
 In your `configuration.py` add `dhdconf` to the list of installed apps:
 
 ```py
+BASE_INSTALLED_APPS = []
 INSTALLED_APPS = [
-	...
-    "dhdconf"
+    "dhdconf",
+    "npm_mjs",
+    "base",
+    "daphne",
+    "django.contrib.admin",  
+    "django.contrib.auth",
+    "allauth.socialaccount",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.admindocs",
+    "django.contrib.flatpages",
+    "channels",
+    "axes",  # django-axes for brute-force protection (can be disabled via REMOVED_APPS)
+    "django_otp",  # Two-factor authentication (can be disabled via REMOVED_APPS)
+    "django_otp.plugins.otp_totp",
+    "django_js_error_hook",
+    "loginas",
+    "fixturemedia",
+    "browser_check",
+    "menu",
+    "document",
+    "bibliography",
+    "usermedia",
+    "user",
+    "allauth",
+    "allauth.account",
+    "avatar",
+    "feedback",
+    "style",
+    "user_template_manager",
+]
+
+# A list of apps to remove from the default installation
+# This is useful for disabling features you don't need
+REMOVED_APPS = [
+    # Example: Disable two-factor authentication entirely
+    "django_otp",
+    # Example: Disable brute-force protection (for development only)
+    "axes",
+    "django_otp.plugins.otp_totp",
 ]
 ```
+
+The reason for explicitly adding all APPS to the list is that we have to
+be sure that the Javascript files of our plugin are loaded first because
+otherwise we can not overwrite the original files of FidusWriter. See
+[here](./technicalaspects.md) for details.
 
 In the same file add the authentication backend `ConftoolBackend` to allow login via conftool. In the same setting keep Djangos `ModelBackend` if you want to allow logins by users who are not registered in conftool (e.g. for admin accounts).
 
